@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Weather App</title>
+</head>
+
+<body>
+    <div class="app-main">
+        <div class="searchInputBox">
+            <input type="text" id="input-box" class="input-box" placeholder="Enter city name..." autocomplete="off">
+        </div>
+
+        <div class="weather-body">
+            <div class="location-details">
+                <div class="city" id="city">Amravati, IN</div>
+                <div class="date" id="date">10 June (Wednesday), 2020</div>
+            </div>
+
+            <div class="weather-status">
+                <div class="temp" id="temp">34&deg;C</div>
+                <div class="humid" id="humid"></div>
+                <div id="speed"></div>
+                <div class="weather" id="weather">Clear</div>
+                <div id="img"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        const getData = async () => {
+            let result = await fetch(`http://gyanendra2204769.lovestoblog.com/myapi.php?city=${document.getElementById('input-box').value}`)
+            result = await result.json()
+            localData(result)
+        }
+
+        const localData = (result) => {
+            window.localStorage.setItem('weather', JSON.stringify(result))
+            addData(JSON.parse(window.localStorage.getItem('weather')))
+        }
+
+
+
+        function showWeatherReport(weather) {
+            console.log(weather);
+
+            if (weather.weather_description == 'clear sky') {
+                document.body.style.backgroundImage = "url('images/clear.jpg')";
+
+
+            } else if (weather.weather_description == 'broken clouds' || weather.weather_description == 'overcast clouds') {
+
+                document.body.style.backgroundImage = "url('images/cloud.jpg')";
+
+            } else if (weather.weather_description.toLowerCase() == 'haze') {
+
+                document.body.style.backgroundImage = "url('images/cloud.jpg')";
+
+            } else if (weather.weather_description == 'heavy intensity rain' || weather.weather_description == 'light rain' || weather.weather_description == 'drizzle' || weather.weather_description == 'mist') {
+
+                document.body.style.backgroundImage = "url('images/rain.jpg')";
+
+            } else if (weather.weather_description == 'snow') {
+
+                document.body.style.backgroundImage = "url('images/snow.jpg')";
+
+            } else if (weather.weather_description == 'thunderstorm') {
+
+                document.body.style.backgroundImage = "url('images/thunderstorm.jpg')";
+
+            }
+        }
+
+
+
+        const addData = (result) => {
+            console.log(result, "data")
+            showWeatherReport(result)
+            var today = new Date();
+            var todaydate = today.getFullYear() + '/' + (today.getMonth() + 1) + '/' + today.getDate();
+            document.getElementById('date').innerHTML = todaydate
+            document.getElementById('city').innerHTML = result.city
+            document.getElementById('weather').innerHTML = result.weather_description
+            document.getElementById('temp').innerHTML = Math.floor(result.weather_temperature) + " °C"
+            document.getElementById('humid').innerHTML = "Humidity: " + result.weather_humidity + "%"
+            document.getElementById('speed').innerHTML = "Wind Speed: " + result.weather_wind + " km/h"
+        }
+
+        const searchInputBox = document.getElementById('input-box');
+
+        searchInputBox.addEventListener('keypress', (event) => {
+
+            if (event.keyCode == 13) {
+                console.log(searchInputBox.value);
+
+                if (!window.localStorage.getItem('weather')) {
+                    getData()
+                }else if((JSON.parse(window.localStorage.getItem('weather'))).city!=document.getElementById('input-box').value){
+                    getData()
+                }else {
+                    let localdata = JSON.parse(window.localStorage.getItem('weather'))
+                    let localDate = (((localdata.weather_when).split(" ")[0]).split("-")).join("/")
+                    let fullDate = localDate + " " + (localdata.weather_when).split(" ")[1]
+
+                    // let date2= new Date("2022/10/10 10:10:15")
+                    let date = new Date()
+                    let year = date.getFullYear()
+                    let month = date.getMonth()
+                    let day = date.getDate()
+
+                    let hour = date.getHours()
+                    let min = date.getMinutes()
+                    let seconds = date.getSeconds()
+
+                    let currDate = `${year}/${month + 1}/${day} ${hour}:${min}:${seconds}`
+                    console.log(currDate, fullDate)
+                    let date1 = new Date(currDate)
+                    let date2 = new Date(fullDate)
+                    if (date1 - date2 > 300000) {
+                        getData()
+                    } else {
+                        addData(JSON.parse(window.localStorage.getItem('weather')))
+                    }
+                    showWeatherReport(JSON.parse(localStorage.getItem('weather')))
+                }
+                document.querySelector('.weather-body').style.display = "block";
+            }
+
+        });
+
+
+
+
+      
+
+    </script>
+</body>
+
+</html>
